@@ -65,6 +65,9 @@ open class YAxis: AxisBase
 
     /// axis space from the smallest value to the bottom in percent of the total axis range
     @objc open var spaceBottom = CGFloat(0.1)
+
+    /// if set to true, the chart will avoid that the first and last label entry in the chart "clip" off the edge of the chart
+    @objc open var avoidFirstLastClippingEnabled = false
     
     /// the position of the y-labels relative to the chart
     @objc open var labelPosition = LabelPosition.outsideChart
@@ -195,4 +198,8 @@ open class YAxis: AxisBase
     
     @objc open var isDrawTopYLabelEntryEnabled: Bool { return drawTopYLabelEntryEnabled }
 
+    @objc open var isAvoidFirstLastClippingEnabled: Bool
+    {
+        return avoidFirstLastClippingEnabled
+    }
 }

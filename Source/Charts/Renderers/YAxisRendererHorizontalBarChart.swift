@@ -154,15 +154,43 @@ open class YAxisRendererHorizontalBarChart: YAxisRenderer
         
         let from = yAxis.isDrawBottomYLabelEntryEnabled ? 0 : 1
         let to = yAxis.isDrawTopYLabelEntryEnabled ? yAxis.entryCount : (yAxis.entryCount - 1)
+
+        let paraStyle = NSParagraphStyle.default.mutableCopy() as! NSMutableParagraphStyle
+        paraStyle.alignment = .center
+
+        let labelAttrs: [NSAttributedString.Key : Any] = [
+            .font: yAxis.labelFont,
+            .foregroundColor: yAxis.labelTextColor,
+            .paragraphStyle: paraStyle
+        ]
         
         for i in stride(from: from, to: to, by: 1)
         {
             let text = yAxis.getFormattedLabel(i)
+
+            var xPosition = positions[i].x
+            if yAxis.isAvoidFirstLastClippingEnabled {
+                // avoid clipping of the last
+                if i == to - 1
+                {
+                    let width = (text as NSString).boundingRect(with: CGSize(), options: .usesLineFragmentOrigin, attributes: labelAttrs, context: nil).size.width
+
+                    if width > viewPortHandler.offsetRight * 2.0
+                               && xPosition + width > viewPortHandler.chartWidth {
+                        xPosition -= width / 2.0
+                    }
+                }
+                else if i == 0
+                { // avoid clipping of the first
+                    let width = (text as NSString).boundingRect(with: CGSize(), options: .usesLineFragmentOrigin, attributes: labelAttrs, context: nil).size.width
+                    xPosition += width / 2.0
+                }
+            }
             
             ChartUtils.drawText(
                 context: context,
                 text: text,
-                point: CGPoint(x: positions[i].x, y: fixedPosition - offset),
+                point: CGPoint(x: xPosition, y: fixedPosition - offset),
                 align: .center,
                 attributes: [NSAttributedString.Key.font: labelFont, NSAttributedString.Key.foregroundColor: labelTextColor])
         }
