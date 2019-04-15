@@ -396,6 +396,15 @@ open class LineChartRenderer: LineRadarRenderer
     /// Generates the path that is used for filled drawing.
     private func generateFilledPath(dataSet: ILineChartDataSet, fillMin: CGFloat, bounds: XBounds, matrix: CGAffineTransform) -> CGPath
     {
+        guard let dataProvider = dataProvider else { return CGMutablePath() }
+
+        var lowerDataSet: IChartDataSet?
+        for d in dataProvider.lineData?.dataSets ?? [] {
+            if dataSet.yMax > d.yMax, (lowerDataSet == nil || lowerDataSet!.yMax <= d.yMax) {
+                lowerDataSet = d
+            }
+        }
+
         let phaseY = animator.phaseY
         let isDrawSteppedEnabled = dataSet.mode == .stepped
         let matrix = matrix
@@ -407,7 +416,11 @@ open class LineChartRenderer: LineRadarRenderer
         e = dataSet.entryForIndex(bounds.min)
         if e != nil
         {
-            filled.move(to: CGPoint(x: CGFloat(e.x), y: fillMin), transform: matrix)
+            var minY = fillMin
+            if let y = lowerDataSet?.entryForIndex(bounds.min)?.y {
+                minY = CGFloat(y)
+            }
+            filled.move(to: CGPoint(x: CGFloat(e.x), y: minY), transform: matrix)
             filled.addLine(to: CGPoint(x: CGFloat(e.x), y: CGFloat(e.y * phaseY)), transform: matrix)
         }
         
@@ -429,8 +442,35 @@ open class LineChartRenderer: LineRadarRenderer
         e = dataSet.entryForIndex(bounds.range + bounds.min)
         if e != nil
         {
-            filled.addLine(to: CGPoint(x: CGFloat(e.x), y: fillMin), transform: matrix)
+            var endMinY = fillMin
+            if let y = lowerDataSet?.entryForIndex(bounds.range + bounds.min)?.y {
+                endMinY = CGFloat(y)
+            }
+            filled.addLine(to: CGPoint(x: CGFloat(e.x), y: endMinY), transform: matrix)
         }
+
+        // create a new path for a dataSet below if it exist in reverse order to create close path
+        if let lDataSet = lowerDataSet {
+            var lowerPath = [CGPoint]()
+
+            for x in stride(from: (bounds.min + 1), through: bounds.range + bounds.min, by: 1)
+            {
+                guard let e = lDataSet.entryForIndex(x) else { continue }
+
+                if isDrawSteppedEnabled
+                {
+                    guard let ePrev = lDataSet.entryForIndex(x-1) else { continue }
+                    lowerPath.append(CGPoint(x: CGFloat(e.x), y: CGFloat(ePrev.y * phaseY)))
+                }
+
+                lowerPath.append(CGPoint(x: CGFloat(e.x), y: CGFloat(e.y * phaseY)))
+            }
+
+            for i in (0..<lowerPath.count).reversed() {
+                filled.addLine(to: lowerPath[i], transform: matrix)
+            }
+        }
+
         filled.closeSubpath()
         
         return filled
