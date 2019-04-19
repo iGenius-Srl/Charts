@@ -380,6 +380,7 @@ open class LineChartRenderer: LineRadarRenderer
         let filled = generateFilledPath(
             dataSet: dataSet,
             fillMin: dataSet.fillFormatter?.getFillLinePosition(dataSet: dataSet, dataProvider: dataProvider) ?? 0.0,
+            fillOverlapEnabled: dataSet.fillFormatter?.fillOverlapEnabled(dataSet: dataSet, dataProvider: dataProvider) ?? true,
             bounds: bounds,
             matrix: trans.valueToPixelMatrix)
         
@@ -394,14 +395,16 @@ open class LineChartRenderer: LineRadarRenderer
     }
     
     /// Generates the path that is used for filled drawing.
-    private func generateFilledPath(dataSet: ILineChartDataSet, fillMin: CGFloat, bounds: XBounds, matrix: CGAffineTransform) -> CGPath
+    private func generateFilledPath(dataSet: ILineChartDataSet, fillMin: CGFloat, fillOverlapEnabled: Bool, bounds: XBounds, matrix: CGAffineTransform) -> CGPath
     {
         guard let dataProvider = dataProvider else { return CGMutablePath() }
 
         var lowerDataSet: IChartDataSet?
-        for d in dataProvider.lineData?.dataSets ?? [] {
-            if dataSet.yMax > d.yMax, (lowerDataSet == nil || lowerDataSet!.yMax <= d.yMax) {
-                lowerDataSet = d
+        if !fillOverlapEnabled {
+            for d in dataProvider.lineData?.dataSets ?? [] {
+                if dataSet.yMax > d.yMax, (lowerDataSet == nil || lowerDataSet!.yMax <= d.yMax) {
+                    lowerDataSet = d
+                }
             }
         }
 

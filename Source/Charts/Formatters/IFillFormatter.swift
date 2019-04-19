@@ -18,4 +18,7 @@ public protocol IFillFormatter
 {
     /// - Returns: The vertical (y-axis) position where the filled-line of the LineDataSet should end.
     func getFillLinePosition(dataSet: ILineChartDataSet, dataProvider: LineChartDataProvider) -> CGFloat
+
+    /// - Returns: If disabled linear fill will occupy space between lines, otherwise default fill will be applied
+    func fillOverlapEnabled(dataSet: ILineChartDataSet, dataProvider: LineChartDataProvider) -> Bool
 }

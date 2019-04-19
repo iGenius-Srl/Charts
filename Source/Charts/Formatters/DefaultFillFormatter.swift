@@ -55,4 +55,8 @@ open class DefaultFillFormatter: NSObject, IFillFormatter
 
         return fillMin
     }
+    
+    open func fillOverlapEnabled(dataSet: ILineChartDataSet, dataProvider: LineChartDataProvider) -> Bool {
+        return true
+    }
 }
