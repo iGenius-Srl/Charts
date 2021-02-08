@@ -172,7 +172,7 @@ open class ChartDataSet: ChartBaseDataSet
         rounding: ChartDataSetRounding) -> ChartDataEntry?
     {
         let index = entryIndex(x: xValue, closestToY: yValue, rounding: rounding)
-        if index > -1
+        if index > -1 && index < self.endIndex
         {
             return self[index]
         }
