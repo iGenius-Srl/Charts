@@ -12,6 +12,12 @@
 import Foundation
 import CoreGraphics
 
+#if canImport(UIKit)
+import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
+
 open class YAxisRendererHorizontalBarChart: YAxisRenderer
 {
     public override init(viewPortHandler: ViewPortHandler, axis: YAxis, transformer: Transformer?)
